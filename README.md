@@ -79,9 +79,9 @@ await store.createMany([{
   dob : new Date()
 },
 { 
-	name: "Jane", 
-	age: 22, 
-	dob : new Date() 
+  name: "Jane", 
+  age: 22, 
+  dob : new Date() 
 }]); // create multiple users at once
 ```
 
