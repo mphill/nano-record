@@ -1,18 +1,24 @@
-
 import _, { CollectionChain } from 'lodash';
 import Adapter from './adapter';
 import { randomUUID } from 'crypto'; 
+import Schema from './schema';
+
 
 class NanoRecord<T> {
     data: Array<T> = [];
+    schemaVersion: number;
+    autoCommit: boolean = true;
+    
     private adapter: Adapter<T>;
 
     /**
-     * File on file system
-     * @param name The name of the collection
+     * Create a new instance of NanoRecord
+     * @param adapter The adapter to use
+     * @param data The data to use
      */
-    private constructor(adapter: Adapter<T>, data: T[]) {
-        this.data = data;
+    private constructor(adapter: Adapter<T>, schema: Schema<T>) {
+        this.schemaVersion = schema.schemaVersion;
+        this.data = schema.data;
         this.adapter = adapter;
     }
 
@@ -22,8 +28,7 @@ class NanoRecord<T> {
      * @returns Promise<NanoRecord<T>>
      */
     public static async init<U>(adapter: Adapter<U>): Promise<NanoRecord<U>> {
-        let data = await adapter.read();
-
+        const data = await adapter.read();        
         const instance = new NanoRecord<U>(adapter, data);
 
         instance.clean();
@@ -36,7 +41,7 @@ class NanoRecord<T> {
      * @returns Promise<void>
      */
     private async commit() {
-        if (this.adapter.autoCommit) {
+        if (this.autoCommit) {
             await this.sync();
         }
     }
@@ -47,7 +52,7 @@ class NanoRecord<T> {
      * @returns T[]
      */
     public findMany(filter?: (v: T) => boolean): T[] {
-        if (filter == undefined) return this.query().value();
+        if (filter == undefined) return this.data;
 
         return this.query().filter(filter).value() as T[];
     }
@@ -96,7 +101,7 @@ class NanoRecord<T> {
      * @param match 
      * @returns 
      */
-    public async update(filter: (v: T) => boolean, match: (r: T) => void): Promise<boolean> {
+    public async updateFirst(filter: (v: T) => boolean, match: (r: T) => void): Promise<boolean> {
         let result = this.findFirst(filter);
 
         if (result == undefined) return false;
@@ -134,7 +139,10 @@ class NanoRecord<T> {
      * @returns Promise<void>
      */
     public async sync(): Promise<void> {
-        this.adapter.write(this.data);
+        this.adapter.write({
+            schemaVersion : this.schemaVersion,
+            data : this.data
+        } satisfies Schema<T>);
     }
 
     /**
@@ -142,7 +150,7 @@ class NanoRecord<T> {
      * @param filter 
      * @returns Promise<boolean>
      */
-    public async delete(filter: (v: T) => boolean): Promise<boolean> {
+    public async deleteFirst(filter: (v: T) => boolean): Promise<boolean> {
         const result = _.without(this.data, _.find(this.data, filter));
 
         if (result == undefined) return false;
@@ -200,7 +208,7 @@ class NanoRecord<T> {
      * @returns Promise<void>
      */
     public async clean(): Promise<void> {
-        this.data = _.remove(this.data, function (v) {
+        this.data = _.remove(this.data,  (v) => {
             return v != null && v != undefined;
         });
 

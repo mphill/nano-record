@@ -24,7 +24,7 @@
 - `Error`    
 - `URL`   
 
-> ℹ️  `JSON.stringify()` stores Date objects as strings, and when `JSON.parse()` is called, the type of Date is lost - it will be a string. 
+> **Note:**  `JSON.stringify()` stores Date objects as strings, and when `JSON.parse()` is called, the type of Date is lost - it will be a string. 
 
 2. Thin [lodash](https://github.com/lodash/lodash) wrapper
 
@@ -50,35 +50,42 @@ Custom adapters can be created by implementing the Adapter interface in `@nano-r
 
 ```ts
 interface person {
+  id: string,
   name: string,
   age: number,
   dob : Date
 }
 
 const adapter = new NodeAdapter<person>("persondb.json");
-adapter.autoCommit = true; // automatically save after mutation
 const store = await NanoRecord.init(adapter);
+
+store.autoCommit = true; // automatically save after mutation
 ```
 
 
 
 ## CRUD Operations
 
+> **Note:** all mutations are async while all queries as sync
+
  **Creating**
 
 ```ts
 await store.create({
+  id: store.makeId(),
   name: "John",
   age: 21,
   dob : new Date()
 }); // create a user
 
 await store.createMany([{
+  id: store.makeId(),
   name: "John",
   age: 21,
   dob : new Date()
 },
 { 
+  id: store.makeId(),
   name: "Jane", 
   age: 22, 
   dob : new Date() 
@@ -106,7 +113,7 @@ await store.updateMany(t => t.age >= 21, person => { person.age = 22 }) // updat
 **Deleting**
 
 ```ts
-const success = await store.deleteFirst(t => t.age >= 21); // return true if found and deleted
+const success = await store.deleteFirst(t => t.id == "33cfb41f-bbe1-4b52-a8ed-b5b0096e134f"); // return true if found and deleted
 
 const recordsDeleted = await store.deleteMany(t => t.age >= 21); // returns number of deleted records
 ```
@@ -116,6 +123,8 @@ const recordsDeleted = await store.deleteMany(t => t.age >= 21); // returns numb
 ## Other Operations
 
 ```ts
+store.makeid(); // generate a guid for id values
+
 store.truncate(); // clear all items in store
 
 store.first(); // get first item
@@ -133,6 +142,37 @@ const result = store
 
 
 await store.sync(); // flush all changes to storage adapter
+```
+
+
+
+## Handing Schema Changes
+
+Your JSON model may change over time, *Nano Record* can help.  Internally your model has a schemaVersion that will be 1 when you first create your store.
+
+Let's say you want to convert date of birth stored as a unix timestamp to a Date object:
+
+```ts
+const adapter = new NodeAdapter<person>("persondb.json");
+const store = await NanoRecord.init(adapter);
+
+interface person {
+  name: string,
+  dob : int,
+  dobDate: Date // <-- add a new field
+}
+
+if(store.schemaVersion == 1) {
+  
+	(await store.findMany()).forEach(p => {
+    p.dobDate = new Date(p.dob);
+  });
+  
+  store.schemaVersion++;
+  store.sync();
+}
+
+// you can now remove the dob property in a future release - the old data will be automatically cleared, or add it back and map the data back to effectively rename the property
 ```
 
 

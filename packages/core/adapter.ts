@@ -1,10 +1,10 @@
+import Schema from "./schema";
 
 interface Adapter<T> {
     name : string,
-    read : () => Promise<T[]>,
-    write : (data : T[]) => Promise<void>,
-    destroy : () => Promise<void>,
-    autoCommit : boolean
+    read : () => Promise<Schema<T>>,
+    write : (schema : Schema<T>) => Promise<void>,
+    destroy : () => Promise<void>
 }
 
 export default Adapter;

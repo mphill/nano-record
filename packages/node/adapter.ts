@@ -1,33 +1,44 @@
 import Adaptor from "@nano-record/core/adapter"
-import fs from "fs";
+import Schema from "@nano-record/core/schema";
+import * as fs from "fs";
 import superjson from 'superjson';
 
 class NodeAdapter<T> implements Adaptor<T> {
     name: string;
 
     constructor(name: string) {
-        if(!fs.existsSync(name)) {
-            fs.writeFileSync(name, superjson.stringify([]));
+        if(!name) {
+            throw new Error("Name is required");
         }
+
         this.name = name;
     }
     
-    async read() : Promise<T[]> {
-        const contents = fs.readFileSync(this.name, { encoding: "utf-8" });
-        let result = superjson.parse<T[]>(contents);
+    
+    async read() : Promise<Schema<T>> {
+        if(!fs.existsSync(this.name)) {
+            const defaultSchema :  Schema<T> = {            
+                data: [],
+                schemaVersion: 1
+            }
+
+            fs.writeFileSync(this.name, superjson.stringify(defaultSchema satisfies Schema<T>));
+        }
+
+        let contents = fs.readFileSync(this.name, { encoding: "utf-8" });
+      
+        let result = superjson.parse<Schema<T>>(contents);
 
         return result;
     };
     
-    async write(data: T[]) : Promise<void> {
-        fs.writeFileSync(this.name, superjson.stringify(data));
+    async write(schema: Schema<T>) : Promise<void> {
+        fs.writeFileSync(this.name, superjson.stringify(schema));
     }
     
     async destroy() : Promise<void> {
         fs.unlinkSync(this.name);
     }
-    
-    autoCommit: boolean = true;
 }
 
 export default NodeAdapter;

@@ -4,6 +4,7 @@ import Adaptor from "@nano-record/core/adapter"
  * MemoryAdapter is a simple in-memory adapter for NanoRecord.
  */
 class MemoryAdapter<T> implements Adaptor<T> {
+    schemaVersion: number = 1;
     private collection: Array<T> = [];
 
 

@@ -1,4 +1,5 @@
 import Adapter from "@nano-record/core/adapter";
+import Schema from "@nano-record/core/schema";
 import superjson from 'superjson';
 
 class WebAdapter<T> implements Adapter<T> {
@@ -8,19 +9,17 @@ class WebAdapter<T> implements Adapter<T> {
         this.name = name;
     }
     
-    async read() : Promise<T[]> {
-        return superjson.parse(window.localStorage.getItem(this.name) || "");
+    async read() : Promise<Schema<T>> {
+        return superjson.parse<Schema<T>>(window.localStorage.getItem(this.name));
     };
     
-    async write(data: T[]) : Promise<void> {
-        window.localStorage.setItem(this.name, superjson.stringify(data));
+    async write(schema: Schema<T>) : Promise<void> {
+        window.localStorage.setItem(this.name, superjson.stringify(schema));
     }
     
     async destroy() : Promise<void> {
         window.localStorage.removeItem(this.name);
     }
-    
-    autoCommit: boolean = true;
 }
 
 export default WebAdapter;

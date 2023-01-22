@@ -1,16 +1,21 @@
 import * as FileSystem from 'expo-file-system';
 import Adapter from '@nano-record/core/adapter';
 import superjson from "superjson";
+import Schema from "@nano-record/core/schema"
 
 class ExpoAdapter<T> implements Adapter<T> {
     name: string;
 
     constructor(name: string) {
+        if(!name) {
+            throw new Error("Name is required");
+        }
+
         this.name = `${FileSystem.documentDirectory}_${name}.json`;
     }
 
-    async write(data: T[]): Promise<void> {
-        await FileSystem.writeAsStringAsync(this.name, JSON.stringify(data));
+    async write(schema : Schema<T>): Promise<void> {
+        await FileSystem.writeAsStringAsync(this.name, superjson.stringify(schema));
     }
 
     async destroy() {
@@ -19,15 +24,23 @@ class ExpoAdapter<T> implements Adapter<T> {
         });
     }
 
-    async read(): Promise<T[]> {
+    async read(): Promise<Schema<T>> {
         const info = await FileSystem.getInfoAsync(this.name);
 
         if (!info.exists) {
-            await FileSystem.writeAsStringAsync(this.name, superjson.stringify([]));
+            
+            const defaultSchema :  Schema<T> = {
+                data: [],
+                schemaVersion: 1
+            }
+
+            await FileSystem.writeAsStringAsync(this.name, superjson.stringify(defaultSchema));
         }
 
-        return superjson.parse(await FileSystem.readAsStringAsync(this.name));
+        return superjson.parse<Schema<T>>(await FileSystem.readAsStringAsync(this.name));
     }
 
     autoCommit: boolean = true;
+    schemaVersion: number;
+
 }

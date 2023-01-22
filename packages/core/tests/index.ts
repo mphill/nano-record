@@ -10,21 +10,9 @@ interface person {
 }
 
 const tests = async () => {
-    const adapter = new MemoryAdapter<person>();
-    adapter.autoCommit = true;
-    
-
-
+    let adapter = new NodeAdapter<person>("test.json");
     const store = await NanoRecord.init(adapter);
-    
-    await store.createMany([
-        { name: "John", age: 20, dob: new Date("1999-01-02") }, 
-        { name: "Jane", age: 21, dob: new Date("2001-01-01") },
-        { name: "Joy", age: 20, dob: new Date("2000-01-01") },
-    ]);
-
-    console.log(store.query().orderBy(t => t.dob, "desc").value());
+    console.log(store.schemaVersion);
 }
-
 
 tests();
