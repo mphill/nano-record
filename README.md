@@ -2,7 +2,9 @@
 
 <p align="center">
 <img src="https://youcast.nyc3.digitaloceanspaces.com/logo.png" alt="Logo" width="30%" />
-A simple ORM written in TypeScript, backed by JSON files with some other spicy features. 🔥
+</p>
+<p align="center">
+  A simple ORM written in TypeScript, backed by JSON files with some other spicy features. 🔥
 </p>
 
 
