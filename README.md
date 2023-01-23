@@ -38,13 +38,6 @@
 
 Nano Records supports the following adapters:
 
-- [Expo](https://docs.expo.dev/versions/latest/sdk/filesystem/) for mobile: `@nano-record/expo`
-- Node for server: `@nano-record/node`
-- Web for browsers via local storage: `@nano-record/web`
-- Memory for testing or when: `@nano-record/memory`
-
-
-
 ### Expo
 
 - JSON files saved to the mobile applications document directory
