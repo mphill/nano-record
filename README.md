@@ -30,23 +30,58 @@
 
 3. Active record-like pattern
 4. Support for Expo,  Node,  web, and memory
+5. Super easy and fun to use
 
 
 
 ## Getting Started
-
-**Adapters:**
 
 Nano Records supports the following adapters:
 
 - [Expo](https://docs.expo.dev/versions/latest/sdk/filesystem/) for mobile: `@nano-record/expo`
 - Node for server: `@nano-record/node`
 - Web for browsers via local storage: `@nano-record/web`
-- Memory for testing or when persistence is **not** needed: `@nano-record/memory`
+- Memory for testing or when: `@nano-record/memory`
+
+
+
+### Expo
+
+- JSON files saved to the mobile applications document directory
+
+```bash
+npm install --save https://github.com/mphill/nano-record/tree/main/packages/core
+npm install --save https://github.com/mphill/nano-record/tree/main/packages/expo
+```
+
+### Node
+
+```bash
+npm install --save https://github.com/mphill/nano-record/tree/main/packages/core
+npm install --save https://github.com/mphill/nano-record/tree/main/packages/node
+```
+
+### Web
+
+- localStorage based
+
+```bash
+npm install --save https://github.com/mphill/nano-record/tree/main/packages/core
+npm install --save https://github.com/mphill/nano-record/tree/main/packages/web
+```
+
+### Memory
+
+- No presistence
+
+```bash
+npm install --save https://github.com/mphill/nano-record/tree/main/packages/core
+npm install --save https://github.com/mphill/nano-record/tree/main/packages/memory
+```
 
 Custom adapters can be created by implementing the Adapter interface in `@nano-record/core`
 
-**Initialize store:**
+### Initialize store
 
 ```ts
 interface person {
@@ -68,7 +103,7 @@ store.autoCommit = true; // automatically save after mutation
 
 > **Note:** all mutations are async while all queries as sync
 
- **Creating**
+###  **Creating**
 
 ```ts
 await store.create({
@@ -92,7 +127,7 @@ await store.createMany([{
 }]); // create multiple users at once
 ```
 
-**Reading**
+### **Reading**
 
 ```ts
 
@@ -102,7 +137,7 @@ store.findMany(t => t.age >= 21); // find all matching records
 
 ```
 
-**Updating**
+### **Updating**
 
 ```ts
 await store.updateFirst(t => t.age >= 21, person => { person.age = 22 }); // update first matching records
@@ -110,7 +145,7 @@ await store.updateFirst(t => t.age >= 21, person => { person.age = 22 }); // upd
 await store.updateMany(t => t.age >= 21, person => { person.age = 22 }) // update all matching records
 ```
 
-**Deleting**
+### **Deleting**
 
 ```ts
 const success = await store.deleteFirst(t => t.id == "33cfb41f-bbe1-4b52-a8ed-b5b0096e134f"); // return true if found and deleted
@@ -188,6 +223,10 @@ let data :T[] = store.data; // contains the underlying data set. You can set thi
 ## Auto Committing
 
 Nano Record can be configured to automatically persist changes to the store upon mutation. If autoCommit is false, you must manually call sync() to write the changes to the store.
+
+
+
+
 
 
 

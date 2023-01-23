@@ -3,14 +3,17 @@ import Adapter from '@nano-record/core/adapter';
 import superjson from "superjson";
 import Schema from "@nano-record/core/schema"
 
+
 class ExpoAdapter<T> implements Adapter<T> {
     name: string;
+    log : boolean;
 
-    constructor(name: string) {
+    constructor(name: string, log: boolean = false) {
         if(!name) {
             throw new Error("Name is required");
         }
 
+        this.log = log;
         this.name = `${FileSystem.documentDirectory}_${name}.json`;
     }
 
@@ -27,6 +30,8 @@ class ExpoAdapter<T> implements Adapter<T> {
     async read(): Promise<Schema<T>> {
         const info = await FileSystem.getInfoAsync(this.name);
 
+        if(this.log) console.log(info);
+        
         if (!info.exists) {
             
             const defaultSchema :  Schema<T> = {
@@ -44,3 +49,5 @@ class ExpoAdapter<T> implements Adapter<T> {
     schemaVersion: number;
 
 }
+
+export default ExpoAdapter;

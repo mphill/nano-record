@@ -1,6 +1,5 @@
 import _, { CollectionChain } from 'lodash';
 import Adapter from './adapter';
-import { randomUUID } from 'crypto'; 
 import Schema from './schema';
 
 
@@ -220,8 +219,14 @@ class NanoRecord<T> {
      * @param length C
      * @returns string
      */
-    public makeId() : string {
-        return randomUUID();
+    public makeId(length : number = 16) : string {
+        var result           = '';
+        var characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
     }
 }
 

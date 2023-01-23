@@ -6,7 +6,7 @@
         "typescript": "^4.9.4"
     },
     "workspaces": [
-        "./packages/*"
+        "packages/*"
     ],
     "engines": {
         "node": ">=14.0.0"
