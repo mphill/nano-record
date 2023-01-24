@@ -1,43 +1,74 @@
-import Adaptor from "@nano-record/core/adapter"
+import { Adapter, RecordType } from "@nano-record/core/adapter"
 import Schema from "@nano-record/core/schema";
 import * as fs from "fs";
+import * as nodepath from "path";
 import superjson from 'superjson';
 
-class NodeAdapter<T> implements Adaptor<T> {
-    name: string;
+class NodeAdapter implements Adapter {
+    path: string;
+    storeName : string = "nano-record-store"
 
-    constructor(name: string) {
-        if(!name) {
-            throw new Error("Name is required");
+    constructor(path: string) {
+        if (!path) {
+            throw new Error("Path is required");
         }
 
-        this.name = name;
+        const storeDirectory = nodepath.resolve(path, this.storeName);
+
+        if(!fs.existsSync(storeDirectory)) {
+            fs.mkdirSync(storeDirectory);
+        }
+
+        this.path = storeDirectory;
     }
-    
-    
-    async read() : Promise<Schema<T>> {
-        if(!fs.existsSync(this.name)) {
-            const defaultSchema :  Schema<T> = {            
-                data: [],
-                schemaVersion: 1
-            }
 
-            fs.writeFileSync(this.name, superjson.stringify(defaultSchema satisfies Schema<T>));
+    async read<T>(key: string, type: RecordType): Promise<Schema<T>> {
+        if(!key) {
+            throw new Error("Key is required");
         }
 
-        let contents = fs.readFileSync(this.name, { encoding: "utf-8" });
-      
-        let result = superjson.parse<Schema<T>>(contents);
+        const filename = this.computedFileName(key, type);
 
-        return result;
+        const defaultSchema: Schema<T> = {
+            data: type === RecordType.Collection ? [] : {} as T,
+            schemaVersion: 1,
+            type: type,
+            createdAt : new Date(),
+            key: key
+        } satisfies Schema<T>;
+
+        if (!fs.existsSync(filename)) {
+            fs.writeFileSync(filename, superjson.stringify(defaultSchema));
+        }
+
+        let contents = fs.readFileSync(filename, { encoding: "utf-8" });
+
+        // If the file is empty, return the default schema
+        if (contents.trim() === "") {
+            return {
+                data: type === RecordType.Collection ? [] : {} as T,
+                schemaVersion: 1,
+                type: type,
+                createdAt : new Date(),
+                key: key
+            } satisfies Schema<T>;
+        }
+
+        let schema = superjson.parse<Schema<T>>(contents);
+        return schema;
     };
-    
-    async write(schema: Schema<T>) : Promise<void> {
-        fs.writeFileSync(this.name, superjson.stringify(schema));
+
+    async write<T>(schema: Schema<T>): Promise<void> {
+        const filename = this.computedFileName(schema.key, schema.type);
+        fs.writeFileSync(filename, superjson.stringify(schema));
     }
-    
-    async destroy() : Promise<void> {
-        fs.unlinkSync(this.name);
+
+    async destroy(): Promise<void> {
+        fs.unlinkSync(this.path);
+    }
+
+    private computedFileName(key: string, type: RecordType): string {
+        return `${this.path}/${key}.${type}.json`;
     }
 }
 

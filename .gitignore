@@ -79,4 +79,4 @@ web_modules/
 .yarn/install-state.gz
 .pnp.*
 
-test.json
+nano-record-store

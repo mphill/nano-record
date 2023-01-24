@@ -1,10 +1,16 @@
 import Schema from "./schema";
+enum RecordType {
+    Collection = 'collection',
+    Item = 'item'
+}
 
-interface Adapter<T> {
-    name : string,
-    read : () => Promise<Schema<T>>,
-    write : (schema : Schema<T>) => Promise<void>,
+interface Adapter {
+    read : <T>(key: string, type : RecordType) => Promise<Schema<T>>,
+    write : <T>(schema : Schema<T>) => Promise<void>,
     destroy : () => Promise<void>
 }
 
-export default Adapter;
+export {
+    Adapter,
+    RecordType
+};

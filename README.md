@@ -74,7 +74,7 @@ npm install --save https://github.com/mphill/nano-record/tree/main/packages/memo
 
 Custom adapters can be created by implementing the Adapter interface in `@nano-record/core`
 
-### Initialize store
+### Initialize Store
 
 ```ts
 interface person {
@@ -84,29 +84,33 @@ interface person {
   dob : Date
 }
 
-const adapter = new NodeAdapter<person>("persondb.json");
-const store = await NanoRecord.init(adapter);
+const adapter = new NodeAdapter("/path/to/store");
+const nano = new NanoRecord(adapter);
 
-store.autoCommit = true; // automatically save after mutation
+const people = nano.collecion<person>("people");
+
+
 ```
 
 
 
-## CRUD Operations
+## Collections
+
+### CRUD Operations
 
 > **Note:** all mutations are async while all queries as sync
 
 ###  **Creating**
 
 ```ts
-await store.create({
+await people.create({
   id: store.makeId(),
   name: "John",
   age: 21,
   dob : new Date()
 }); // create a user
 
-await store.createMany([{
+await people.createMany([{
   id: store.makeId(),
   name: "John",
   age: 21,
@@ -124,31 +128,31 @@ await store.createMany([{
 
 ```ts
 
-store.findFirst(t => t.id = "33cfb41f-bbe1-4b52-a8ed-b5b0096e134f"); // find first matching record
+people.findFirst(t => t.id = "33cfb41f-bbe1-4b52-a8ed-b5b0096e134f"); // find first matching record
 
-store.findMany(t => t.age >= 21); // find all matching records
+people.findMany(t => t.age >= 21); // find all matching records
 
 ```
 
 ### **Updating**
 
 ```ts
-await store.updateFirst(t => t.age >= 21, person => { person.age = 22 }); // update first matching records
+await people.updateFirst(t => t.age >= 21, person => { person.age = 22 }); // update first matching records
 
-await store.updateMany(t => t.age >= 21, person => { person.age = 22 }) // update all matching records
+await people.updateMany(t => t.age >= 21, person => { person.age = 22 }) // update all matching records
 ```
 
 ### **Deleting**
 
 ```ts
-const success = await store.deleteFirst(t => t.id == "33cfb41f-bbe1-4b52-a8ed-b5b0096e134f"); // return true if found and deleted
+const success = await people.deleteFirst(t => t.id == "33cfb41f-bbe1-4b52-a8ed-b5b0096e134f"); // return true if found and deleted
 
-const recordsDeleted = await store.deleteMany(t => t.age >= 21); // returns number of deleted records
+const recordsDeleted = await people.deleteMany(t => t.age >= 21); // returns number of deleted records
 ```
 
 
 
-## Other Operations
+### Other Collection Operations
 
 ```ts
 store.makeid(); // generate a guid for id values
@@ -170,6 +174,30 @@ const result = store
 
 
 await store.sync(); // flush all changes to storage adapter
+```
+
+
+
+## Items Storage
+
+Nano ORM supports storing items  as key-values
+
+```ts
+// Store a counter
+const count = await nano.item<number>("count"); 
+await count.set(2)
+console.log(count.get() == 2); // true
+
+// Store user settings
+const settings = await nano.item<{
+	email: string,
+  notifications: boolean
+}>("settings"); 
+
+await settings.set({
+  email: "user@example.com",
+  notifications: true
+})
 ```
 
 
@@ -204,18 +232,6 @@ if(store.schemaVersion == 1) {
 ```
 
 
-
-## Data Access
-
-```ts
-let data :T[] = store.data; // contains the underlying data set. You can set this value too. 
-```
-
-
-
-## Auto Committing
-
-Nano Record can be configured to automatically persist changes to the store upon mutation. If autoCommit is false, you must manually call sync() to write the changes to the store.
 
 
 
