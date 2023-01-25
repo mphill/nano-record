@@ -1,6 +1,6 @@
 import {Adapter, RecordType} from "./adapter";
 import Schema from "./schema";
-import { Loadable } from "./utils";
+import { Loadable, verifyKey } from "./utils";
 
 // A class that allows storage of a value with a set and get method
 class Item<T> implements Loadable {
@@ -14,6 +14,11 @@ class Item<T> implements Loadable {
     public async set(value: T) {
         this.schema.data = value;
         await this.adapter.write(this.schema);
+    }
+
+    public async delete() {
+        await this.adapter.delete<T>(this.schema);
+        this.schema.data = undefined
     }
 
     async load(key : string, adapter: Adapter) {

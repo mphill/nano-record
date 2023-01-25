@@ -1,49 +1,93 @@
-import * as FileSystem from 'expo-file-system';
-import {Adapter, RecordType} from '@nano-record/core/adapter';
+import * as FileSystem from "expo-file-system";
+import { Adapter, RecordType } from "@nano-record/core/adapter";
 import superjson from "superjson";
-import Schema from "@nano-record/core/schema"
-
+import Schema from "@nano-record/core/schema";
 
 class ExpoAdapter implements Adapter {
-    name: string;
-    log : boolean;
+  log: boolean;
 
-    constructor(log: boolean = false) {
+  constructor(log: boolean = false) {
+    this.log = log;
+  }
 
-        this.log = log;
-        this.name = `${FileSystem.documentDirectory}_${name}.json`;
+  async write<T>(schema: Schema<T>): Promise<void> {
+    const filename = this.computedFileName(schema.key, schema.type);
+    await FileSystem.writeAsStringAsync(filename, superjson.stringify(schema));
+  }
+
+  async delete<T>(schema: Schema<T>): Promise<void> {
+    const filename = this.computedFileName(schema.key, schema.type);
+    await FileSystem.deleteAsync(filename, {
+      idempotent: true,
+    });
+  }
+
+  async destroy() {
+    // await FileSystem.deleteAsync(this.name, {
+    //     idempotent: true
+    // });
+  }
+
+  async read<T>(key: string, type: RecordType): Promise<Schema<T>> {
+    const filename = this.computedFileName(key, type);
+    const info = await FileSystem.getInfoAsync(filename);
+
+    if (this.log) console.log(info);
+
+    if (!info.exists) {
+      const defaultSchema: Schema<T> = {
+        key: key,
+        data: [],
+        schemaVersion: 1,
+        type: type,
+        createdAt: new Date(),
+      };
+
+      await FileSystem.writeAsStringAsync(
+        filename,
+        superjson.stringify(defaultSchema)
+      );
     }
 
-    async write<T>(schema : Schema<T>): Promise<void> {
-        await FileSystem.writeAsStringAsync(this.name, superjson.stringify(schema));
-    }
+    return superjson.parse<Schema<T>>(
+      await FileSystem.readAsStringAsync(filename)
+    );
+  }
 
-    async destroy() {
-        await FileSystem.deleteAsync(this.name, {
-            idempotent: true
-        });
-    }
+  // Get all items
+  public async items(): Promise<string[]> {
+    const files = await FileSystem.readDirectoryAsync(
+      `${FileSystem.documentDirectory}/nano`
+    );
+    var items = files.map((file) => {
+      const parts = file.split(".");
+      if (parts.length === 3 && parts[2] === "json") {
+        return parts[0];
+      }
+    });
 
-    async read<T>(key: string, type : RecordType): Promise<Schema<T>> {
-        const info = await FileSystem.getInfoAsync(this.name);
+    return items;
+  }
 
-        if(this.log) console.log(info);
-        
-        if (!info.exists) {
-            
-            const defaultSchema :  Schema<T> = {
-                key: key,
-                data: [],
-                schemaVersion: 1,
-                type: type,
-                createdAt : new Date()
-            }
+  // Get all collections
+  public async collections(): Promise<string[]> {
+    const files = await FileSystem.readDirectoryAsync(
+      `${FileSystem.documentDirectory}/nano`
+    );
 
-            await FileSystem.writeAsStringAsync(this.name, superjson.stringify(defaultSchema));
-        }
+    var collections = files.map((file) => {
+      const parts = file.split(".");
+      if (parts.length === 3 && parts[2] === "json") {
+        return parts[0];
+      }
+    });
 
-        return superjson.parse<Schema<T>>(await FileSystem.readAsStringAsync(this.name));
-    }
+    return collections;
+  }
+
+  private computedFileName(key: string, type: RecordType): string {
+    return `${FileSystem.documentDirectory}/nano/${name}.json`;
+  }
 }
 
 export default ExpoAdapter;

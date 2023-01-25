@@ -9,10 +9,9 @@
 
 
 
-
 ## Key Features
 
-1. Serialization powered by [superjson](https://github.com/blitz-js/superjson) 🚀  allowing typesafe storage of:
+1. Serialization powered by [superjson](https://github.com/blitz-js/superjson) 🚀 allowing type-safe storage of:
 
 
 - `undefined` 
@@ -72,7 +71,7 @@ npm install --save https://github.com/mphill/nano-record/tree/main/packages/core
 npm install --save https://github.com/mphill/nano-record/tree/main/packages/memory
 ```
 
-Custom adapters can be created by implementing the Adapter interface in `@nano-record/core`
+
 
 ### Initialize Store
 
@@ -80,8 +79,7 @@ Custom adapters can be created by implementing the Adapter interface in `@nano-r
 interface person {
   id: string,
   name: string,
-  age: number,
-  dob : Date
+  age: number
 }
 
 const adapter = new NodeAdapter("/path/to/store");
@@ -94,11 +92,38 @@ const people = nano.collecion<person>("people");
 
 
 
+## Adapters
+
+Adapters are responsible for reading, writing and deleting data.  There are two main data storage mechanisms, `collections` and `items`.  You can think of a collection and as array of items.
+
+```ts
+nano.items(); // list all items in store ['item-key1', 'item-key2']
+nano.collections(); // list all collections in store ['collection-key1', 'collection-key2']
+```
+
+Custom adapters can be created by implementing the `Adapter` interface in `@nano-record/core`.  
+
+
+
+## Key Conventions for Collections and Items
+
+Keys can only contain a-z, 0-9 or - and they must be lowercase.
+
+```ts
+const people = nano.collecion<person>("people"); 			// ✅
+const people = nano.collecion<person>("people-item"); // ✅
+const people = nano.collecion<person>("People"); 			// ❌
+const people = nano.collecion<person>("people/item");	// ❌
+const people = nano.collecion<person>("people.item");	// ❌
+```
+
+
+
 ## Collections
 
 ### CRUD Operations
 
-> **Note:** all mutations are async while all queries as sync
+> 💣 **Note:** all mutations are async while all queries as sync
 
 ###  **Creating**
 
@@ -106,21 +131,18 @@ const people = nano.collecion<person>("people");
 await people.create({
   id: store.makeId(),
   name: "John",
-  age: 21,
-  dob : new Date()
+  age: 21
 }); // create a user
 
 await people.createMany([{
   id: store.makeId(),
   name: "John",
-  age: 21,
-  dob : new Date()
+  age: 21
 },
 { 
   id: store.makeId(),
   name: "Jane", 
-  age: 22, 
-  dob : new Date() 
+  age: 22
 }]); // create multiple users at once
 ```
 
@@ -155,32 +177,32 @@ const recordsDeleted = await people.deleteMany(t => t.age >= 21); // returns num
 ### Other Collection Operations
 
 ```ts
-store.makeid(); // generate a guid for id values
 
-store.truncate(); // clear all items in store
+collection.makeId(); // generate a guid for id values, helpful for ids
 
-store.first(); // get first item
+collection.paginate(1, 20); // paginate collection results, start at page 1 and take 20
 
-store.last(); // get last item
+collection.first(); // get first item
 
-store.query(); // lodash hook
+collection.last(); // get last item
 
-const result = store
+collection.query(); // lodash hook
+
+const result = collection
   .query()
   .filter(t => t.age == 20)
   .sortBy(t => t.name, "asc")
   .first()
   .value(); // using lodash to get the first name alphabetically
 
-
-await store.sync(); // flush all changes to storage adapter
+collection.truncate(); // clear all items in the collection
 ```
 
 
 
-## Items Storage
+## Item Storage
 
-Nano ORM supports storing items  as key-values
+Nano Record supports storing items as key-values
 
 ```ts
 // Store a counter
@@ -191,12 +213,12 @@ console.log(count.get() == 2); // true
 // Store user settings
 const settings = await nano.item<{
 	email: string,
-  notifications: boolean
+	notifications: boolean
 }>("settings"); 
 
 await settings.set({
-  email: "user@example.com",
-  notifications: true
+	email: "user@example.com",
+	notifications: true
 })
 ```
 
@@ -204,7 +226,7 @@ await settings.set({
 
 ## Handing Schema Changes
 
-Your JSON model may change over time, *Nano Record* can help.  Internally your model has a schemaVersion that will be 1 when you first create your store.
+Your JSON model may change over time, Nano Record can help.  Internally your model has a schemaVersion that will be 1 when you first create your store.
 
 Let's say you want to convert date of birth stored as a unix timestamp to a Date object:
 

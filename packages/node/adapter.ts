@@ -66,9 +66,40 @@ class NodeAdapter implements Adapter {
     async destroy(): Promise<void> {
         fs.unlinkSync(this.path);
     }
+    async delete<T>(schema: Schema<T>) : Promise<void> {
+        const filename = this.computedFileName(schema.key, schema.type);
+        fs.unlinkSync(filename);
+    }
 
     private computedFileName(key: string, type: RecordType): string {
         return `${this.path}/${key}.${type}.json`;
+    }
+
+    async items(): Promise<string[]> {
+        const files = fs.readdirSync(this.path);
+        
+        var items = files.map((file) => {
+            const parts = file.split(".");
+            if(parts.length === 3 && parts[2] === "json") {
+                return parts[0];
+            }
+        });
+
+        return items;
+    }
+
+    async collections(): Promise<string[]> {
+        const files = fs.readdirSync(this.path);
+        
+        var collections = files.map((file) => {
+            const parts = file.split(".");
+            if(parts.length === 3 && parts[2] === "json") {
+                return parts[0];
+
+            }
+        });
+
+        return collections;
     }
 }
 

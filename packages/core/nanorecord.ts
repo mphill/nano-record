@@ -2,7 +2,7 @@
 import {Adapter, RecordType} from './adapter';
 import Item from './item';
 import Collection from './collection';
-import Schema from './schema';
+import {verifyKey} from './utils';
 
 
 class NanoRecord {
@@ -18,6 +18,12 @@ class NanoRecord {
      * @returns Promise<NanoRecord<T>>
      */
     public async collection<U>(key : string): Promise<Collection<U>> {
+        if(!verifyKey(key)) {
+            throw new Error("Key must be alphanumeric and contain no spaces or special characters");
+        }
+
+        key = key.toLowerCase();
+
         const instance = new Collection<U>(key, this.adapter);
         
         await instance.load(key, this.adapter);
@@ -31,11 +37,21 @@ class NanoRecord {
      * @returns Promise<NanoRecord<T>>
      */ 
     public async item<U>(key : string) : Promise<Item<U>> {
+        if(!verifyKey(key)) {
+            throw new Error("Key must be alphanumeric and contain no spaces or special characters");
+        }
+
+        key = key.toLowerCase();
+
         const instance =  new Item<U>();
 
         instance.load(key, this.adapter);
 
         return instance;
+    }
+
+    public items() : string[] {
+        return this.adapter.items();
     }
 }
 

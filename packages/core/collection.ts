@@ -202,6 +202,14 @@ class Collection<T> implements Loadable  {
         return result;
     }
 
+    // Pagination results of data
+    public paginate(page: number, perPage: number): T[] {
+        if(page < 1) throw new Error("Page must be greater than 0");
+        if(perPage < 1) throw new Error("PerPage must be greater than 0");
+        
+        return this.data.slice((page - 1) * perPage, page * perPage);
+    }
+
     /**
      * Remove all null and undefined entries from the collection. TS isn't smart enough to know that this is possible in some cases, this method can clear this issues if it happens. Automatically called when the collection is initialized.
      * @returns Promise<void>

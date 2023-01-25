@@ -6,27 +6,37 @@ import ExpoAdapter from "../../expo/adapter";
 
 interface person {
     name: string,
-    age: number,
-    dob : Date
+    dob : Date,
+    email: string,
+    address: string,
+    sex: "M" | "F",
 }
 
 const tests = async () => {
-    const adapter = new ExpoAdapter();
+    const adapter = new NodeAdapter("/Users/mphill/code/nano-record/");
 
     const nano = new NanoRecord(adapter);
     
-    const collection = await nano.collection<person>("person"); // pass the adapter in to enabled auto commit
+    const collection = await nano.collection<person>("person");
     
-
-    await collection.create({name: "matt", age: 30, dob: new Date()});
+    // await collection.create({
+    //     name: "matt", 
+    //     email: "user@example.com",
+    //     address: "1234 Main St",
+    //     sex: "M",
+    //     dob: new Date("2000-01-01")
+    // });
 
     console.log(collection.count());
 
-    const count = await nano.item<number>("count"); 
+    const count = await nano.item<number>("ount-adsf"); 
+    await count.set(2);
 
-    await count.set(2)
+    const name = await nano.item<string>("counte-adsf"); 
+    await name.set("matt");
 
-    console.log(count.get() == 2); // true
+    console.log(nano.items());
+
 
 
     

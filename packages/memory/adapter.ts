@@ -4,7 +4,8 @@ import Schema from "@nano-record/core/schema"
 /**
  * MemoryAdapter is a simple in-memory adapter for NanoRecord.
  */
-class MemoryAdapter implements Adapter {    
+class MemoryAdapter implements Adapter {
+      
     private schema: Schema<any>;
 
     name: string = "memory";
@@ -21,9 +22,10 @@ class MemoryAdapter implements Adapter {
         return this.schema;
     }
 
-    autoCommit: boolean = true;
-    schemaVersion: number = 1;
-
+    // Delete key from memory store
+    async delete(key: string) : Promise<void>  {
+        
+    }
 }
 
 export default MemoryAdapter
