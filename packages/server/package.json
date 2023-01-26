@@ -1,0 +1,29 @@
+{
+  "name": "@nano-record/server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mphill/nano-record.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mphill/nano-record/issues"
+  },
+  "homepage": "https://github.com/mphill/nano-record#readme",
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "express": "^4.18.2",
+    "morgan": "^1.10.0",
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "@types/morgan": "^1.9.4"
+  }
+}

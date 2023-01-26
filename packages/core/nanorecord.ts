@@ -50,8 +50,12 @@ class NanoRecord {
         return instance;
     }
 
-    public items() : string[] {
-        return this.adapter.items();
+    public async items() : Promise<string[]> {
+        return await this.adapter.items();
+    }
+
+    public async collections() : Promise<string[]> {
+        return await this.adapter.collections();
     }
 }
 

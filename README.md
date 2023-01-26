@@ -231,8 +231,8 @@ Your JSON model may change over time, Nano Record can help.  Internally your mod
 Let's say you want to convert date of birth stored as a unix timestamp to a Date object:
 
 ```ts
-const adapter = new NodeAdapter<person>("persondb.json");
-const store = await NanoRecord.init(adapter);
+const adapter = new NodeAdapter("/path/to/store");
+const nano = new NanoRecord(adapter);
 
 interface person {
   name: string,
@@ -240,20 +240,51 @@ interface person {
   dobDate: Date // <-- add a new field
 }
 
-if(store.schemaVersion == 1) {
+const people = nano.collection<person>("person");
+
+if(people.schemaVersion == 1) {
   
-	(await store.findMany()).forEach(p => {
+	(await people.findMany()).forEach(p => {
     p.dobDate = new Date(p.dob);
   });
   
-  store.schemaVersion++;
-  store.sync();
+  people.schemaVersion++;
+  people.sync();
 }
 
 // you can now remove the dob property in a future release - the old data will be automatically cleared, or add it back and map the data back to effectively rename the property
 ```
 
 
+
+## 🚀 Nano Record Server
+
+You can effortlessly create a REST server using [zod](https://github.com/colinhacks/zod). Just define your schema and map it to a route, Nano Server will automatically create GET, POST, PUT and DELETE endpoints for you. 
+
+```ts
+import NodeAdapter from "@nano-record/node";
+import z from 'zod'
+import server from "@nano-record/server";
+
+const adapter = new NodeAdapter("./");
+
+const cards = z.object({
+    name: z.string(),
+    year: z.number(),
+    graded: z.boolean(),
+    grade: z.number().optional(),
+    value: z.number(),
+    league: z.enum(["mlb", "nba", "nfl", "nhl"]),
+    vintage: z.boolean(),
+    manufacturer: z.enum(["topps", "panini", "upperdeck", "donruss", "bowman", "fleer", "score", "prizm", "other"]),
+});
+
+server(adapter, 3000, {
+    "cards": {
+        schema: cards
+    }
+});
+```
 
 
 

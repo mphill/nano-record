@@ -64,14 +64,17 @@ class Collection<T> implements Loadable  {
     }
 
     /**
-     * Remove an entry from the collection
+     * Remove first item that matches from the collection
      * @param filter 
      * @returns Promise<boolean>
      */
     public async deleteFirst(filter: (v: T) => boolean): Promise<boolean> {
+
+        const initialSize = this.count();
+
         const result = _.without(this.data, _.find(this.data, filter));
 
-        if (result == undefined) return false;
+        if (result == undefined || result.length == initialSize) return false;
 
         this.data = result as T[];
 

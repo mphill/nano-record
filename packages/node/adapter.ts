@@ -13,6 +13,8 @@ class NodeAdapter implements Adapter {
             throw new Error("Path is required");
         }
 
+        console.log("Nano Record Store: " + nodepath.resolve(path));
+
         const storeDirectory = nodepath.resolve(path, this.storeName);
 
         if(!fs.existsSync(storeDirectory)) {
