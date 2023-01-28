@@ -35,7 +35,7 @@ const tests = async () => {
     const name = await nano.item<string>("counte-adsf"); 
     await name.set("matt");
 
-    console.log(nano.items());
+    console.log(await nano.items());
 
 
 

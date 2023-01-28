@@ -4,8 +4,8 @@ import server from "../../server/app";
 
 const adapter = new NodeAdapter("./");
 
-
 const cards = z.object({
+    id: z.string().optional(),
     name: z.string(),
     year: z.number(),
     graded: z.boolean(),
@@ -13,8 +13,8 @@ const cards = z.object({
     value: z.number(),
     league: z.enum(["mlb", "nba", "nfl", "nhl"]),
     vintage: z.boolean(),
-    manufacturer: z.enum(["topps", "panini", "upperdeck", "donruss", "bowman", "fleer", "score", "prizm", "other"]),
-
+    created: z.coerce.date(),
+    manufacturer: z.enum(["topps", "panini", "upperdeck", "donruss", "bowman", "fleer", "score", "prizm", "other"])
 });
 
 server(adapter, 3000, {
@@ -22,5 +22,3 @@ server(adapter, 3000, {
         schema: cards
     }
 });
-
-

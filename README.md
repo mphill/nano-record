@@ -257,9 +257,13 @@ if(people.schemaVersion == 1) {
 
 
 
-## 🚀 Nano Record Server
+## Nano Record Server (NRS)
 
-You can effortlessly create a REST server using [zod](https://github.com/colinhacks/zod). Just define your schema and map it to a route, Nano Server will automatically create GET, POST, PUT and DELETE endpoints for you. 
+You can effortlessly create a REST server using [zod](https://github.com/colinhacks/zod). Just define your schema and map it to a route, NRS will automatically create GET, POST, PUT and DELETE endpoints for you. 🤩
+
+### Primary Keys
+
+NRS automatically handles your primary identifier by attaching an id to your object, transparently handing it for you. 
 
 ```ts
 import NodeAdapter from "@nano-record/node";
@@ -286,9 +290,16 @@ server(adapter, 3000, {
 });
 ```
 
+When you start your server, it will display all the routes that were automatically created.
 
-
-
+```bash
+GET /cards
+GET /cards/:id
+POST /cards
+DELETE /cards/:id
+PUT /cards/:id
+Nano Server listening on port 3000
+```
 
 
 

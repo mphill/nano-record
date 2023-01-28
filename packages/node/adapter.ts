@@ -6,7 +6,7 @@ import superjson from 'superjson';
 
 class NodeAdapter implements Adapter {
     path: string;
-    storeName : string = "nano-record-store"
+    storeName: string = "nano-record-store"
 
     constructor(path: string) {
         if (!path) {
@@ -17,7 +17,7 @@ class NodeAdapter implements Adapter {
 
         const storeDirectory = nodepath.resolve(path, this.storeName);
 
-        if(!fs.existsSync(storeDirectory)) {
+        if (!fs.existsSync(storeDirectory)) {
             fs.mkdirSync(storeDirectory);
         }
 
@@ -25,7 +25,7 @@ class NodeAdapter implements Adapter {
     }
 
     async read<T>(key: string, type: RecordType): Promise<Schema<T>> {
-        if(!key) {
+        if (!key) {
             throw new Error("Key is required");
         }
 
@@ -35,7 +35,7 @@ class NodeAdapter implements Adapter {
             data: type === RecordType.Collection ? [] : {} as T,
             schemaVersion: 1,
             type: type,
-            createdAt : new Date(),
+            createdAt: new Date(),
             key: key
         } satisfies Schema<T>;
 
@@ -51,7 +51,7 @@ class NodeAdapter implements Adapter {
                 data: type === RecordType.Collection ? [] : {} as T,
                 schemaVersion: 1,
                 type: type,
-                createdAt : new Date(),
+                createdAt: new Date(),
                 key: key
             } satisfies Schema<T>;
         }
@@ -68,7 +68,7 @@ class NodeAdapter implements Adapter {
     async destroy(): Promise<void> {
         fs.unlinkSync(this.path);
     }
-    async delete<T>(schema: Schema<T>) : Promise<void> {
+    async delete<T>(schema: Schema<T>): Promise<void> {
         const filename = this.computedFileName(schema.key, schema.type);
         fs.unlinkSync(filename);
     }
@@ -79,12 +79,11 @@ class NodeAdapter implements Adapter {
 
     async items(): Promise<string[]> {
         const files = fs.readdirSync(this.path);
-        
-        var items = files.map((file) => {
-            const parts = file.split(".");
-            if(parts.length === 3 && parts[2] === "json") {
-                return parts[0];
-            }
+
+        var items = files.filter((file) => {
+            return file.endsWith(".item.json");
+        }).map((file) => {
+            return file.replace(".item.json", "");
         });
 
         return items;
@@ -92,13 +91,11 @@ class NodeAdapter implements Adapter {
 
     async collections(): Promise<string[]> {
         const files = fs.readdirSync(this.path);
-        
-        var collections = files.map((file) => {
-            const parts = file.split(".");
-            if(parts.length === 3 && parts[2] === "json") {
-                return parts[0];
 
-            }
+        var collections = files.filter((file) => {
+            return file.endsWith(".collection.json");
+        }).map((file) => {
+            return file.replace(".collection.json", "");
         });
 
         return collections;
