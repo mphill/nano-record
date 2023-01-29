@@ -7,7 +7,7 @@ const adapter = new NodeAdapter("./");
 const cards = z.object({
     id: z.string().optional(),
     name: z.string(),
-    year: z.number(),
+    year: z.number().min(0),
     graded: z.boolean(),
     grade: z.number(),
     value: z.number(),
@@ -21,4 +21,10 @@ server(adapter, 3000, {
     "cards": {
         schema: cards
     }
-});
+    },
+    (express) => {
+        express.use((req, res, next) => {
+            // middlware Example
+            next();
+        });
+    });

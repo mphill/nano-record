@@ -1,10 +1,12 @@
-import express from 'express';
+import express from "express";
+import { Request, Express } from "express";
 import { ZodType } from "express-zod-api/dist/extend-zod";
 import bodyParser from 'body-parser';
 import NanoRecord from "../core/nanorecord";
 import { Adapter } from '@nano-record/core/adapter';
 import z from 'zod'
 import morgan from 'morgan';
+import { ExportDeclaration } from 'typescript';
 
 const app = express();
 
@@ -15,9 +17,13 @@ interface CollectionRoute {
     }
 }
 
-const server = async (adapter: Adapter, port: number, endpoints: CollectionRoute) => {
+const server = async (adapter: Adapter, port: number, endpoints: CollectionRoute, expressInstances? : (express: Express) => void) => {
 
     const nano = new NanoRecord(adapter);
+
+    if(expressInstances) {
+        expressInstances(app);
+    }
 
     app.use(bodyParser.json())
 
@@ -42,7 +48,10 @@ const server = async (adapter: Adapter, port: number, endpoints: CollectionRoute
 
         console.log(`GET /${endpoint}/:id`);
 
-        app.get(`/${endpoint}/:id`, async (req, res) => {
+
+
+        app.get(`/${endpoint}/:id`, async (req : Request<{ id: string}>, res) => {
+
             const result = await instance.findFirst(t => t.id == req.params.id);
             if (result) {
                 res.send(result);
@@ -68,7 +77,7 @@ const server = async (adapter: Adapter, port: number, endpoints: CollectionRoute
 
         console.log(`DELETE /${endpoint}/:id`);
 
-        app.delete(`/${endpoint}/:id`, async (req, res) => {
+        app.delete(`/${endpoint}/:id`, async (req : Request<{ id: string}>, res) => {
             const result = await instance.deleteFirst(v => v.id == req.params.id);
 
             if (result) {
@@ -80,7 +89,7 @@ const server = async (adapter: Adapter, port: number, endpoints: CollectionRoute
 
         console.log(`PUT /${endpoint}/:id`);
 
-        app.put(`/${endpoint}/:id`, async (req, res) => {
+        app.put(`/${endpoint}/:id`, async (req : Request<{ id: string}>, res) => {
             const validation = schema.schema.safeParse(req.body) as any;
 
             if (validation.success) {
